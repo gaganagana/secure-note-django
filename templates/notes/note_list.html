@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}My Notes — SecureNote{% endblock %}
+
+{% block content %}
+<div class="row align-items-center justify-content-between mb-4 g-3">
+    <div class="col-md-6">
+        <h2 class="fw-bold mb-1 d-flex align-items-center gap-2">
+            <i class="bi bi-journal-text text-primary"></i>
+            <span>My Encrypted Notes</span>
+        </h2>
+        <p class="text-body-secondary mb-0">
+            All notes are encrypted using Fernet before storage in SQLite.
+        </p>
+    </div>
+    <div class="col-md-6 d-flex justify-content-md-end gap-2">
+        <a href="{% url 'note_create' %}" class="btn btn-primary rounded-pill px-4 shadow-sm d-flex align-items-center gap-2">
+            <i class="bi bi-plus-lg"></i>
+            <span>New Note</span>
+        </a>
+    </div>
+</div>
+
+<!-- Search & Category Filters -->
+<div class="card border-0 shadow-sm rounded-4 mb-4 bg-body-tertiary">
+    <div class="card-body p-3">
+        <form method="get" action="{% url 'note_list' %}" class="row g-3 align-items-center">
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-body border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0" placeholder="Search note titles..." aria-label="Search">
+                    {% if search_query %}
+                        <a href="{% url 'note_list' %}{% if selected_category and selected_category != 'All' %}?category={{ selected_category }}{% endif %}" class="btn btn-outline-secondary" title="Clear Search">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="col-lg-6 d-flex flex-wrap gap-2 align-items-center">
+                <span class="small text-muted fw-semibold me-1"><i class="bi bi-tag-fill me-1"></i>Filter:</span>
+                <a href="{% url 'note_list' %}{% if search_query %}?q={{ search_query }}{% endif %}" class="btn btn-sm rounded-pill px-3 {% if selected_category == 'All' or not selected_category %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+                    All
+                </a>
+                {% for cat in categories %}
+                    <a href="{% url 'note_list' %}?category={{ cat }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm rounded-pill px-3 {% if selected_category == cat %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+                        {{ cat }}
+                    </a>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Notes Cards Grid -->
+{% if notes %}
+    <div class="row g-3 row-cols-1 row-cols-md-2 row-cols-lg-3">
+        {% for note in notes %}
+            <div class="col">
+                <div class="card h-100 border rounded-4 p-3 bg-body-tertiary shadow-sm hover-card d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge category-badge category-{{ note.category|lower }}">{{ note.category }}</span>
+                        <small class="text-muted font-monospace"><i class="bi bi-calendar3 me-1"></i>{{ note.created_at|date:"M d, Y" }}</small>
+                    </div>
+                    
+                    <h5 class="fw-bold mb-2 text-truncate" title="{{ note.title }}">
+                        {{ note.title }}
+                    </h5>
+                    
+                    <div class="p-2 rounded-3 bg-body border mb-3 small text-muted font-monospace text-truncate">
+                        <i class="bi bi-lock-fill text-warning me-1"></i>
+                        <span>Ciphertext: {{ note.encrypted_content|truncatechars:35 }}</span>
+                    </div>
+
+                    <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top">
+                        <a href="{% url 'note_detail' note.pk %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                            <i class="bi bi-eye me-1"></i>View Decrypted
+                        </a>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'note_update' note.pk %}" class="btn btn-sm btn-outline-secondary rounded-circle" title="Edit Note">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger rounded-circle delete-note-btn" 
+                                    data-note-id="{{ note.pk }}" 
+                                    data-note-title="{{ note.title }}" 
+                                    data-delete-url="{% url 'note_delete' note.pk %}"
+                                    title="Delete Note">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card border-0 shadow-sm rounded-4 bg-body-tertiary text-center py-5">
+        <div class="card-body">
+            <i class="bi bi-search fs-1 text-muted mb-3 d-block"></i>
+            <h4 class="fw-bold">No notes found</h4>
+            {% if search_query or selected_category != 'All' and selected_category %}
+                <p class="text-muted">No notes match your filter or search query "{{ search_query }}".</p>
+                <a href="{% url 'note_list' %}" class="btn btn-outline-primary rounded-pill px-4">
+                    Clear Filters
+                </a>
+            {% else %}
+                <p class="text-muted">You haven't created any notes yet. Create your first encrypted note now!</p>
+                <a href="{% url 'note_create' %}" class="btn btn-primary rounded-pill px-4">
+                    <i class="bi bi-plus-lg me-1"></i>Create Note
+                </a>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

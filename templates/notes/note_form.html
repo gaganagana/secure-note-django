@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if is_edit %}Edit Note: {{ note.title }}{% else %}New Encrypted Note{% endif %} — SecureNote
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-lg rounded-4 bg-body-tertiary">
+            <div class="card-header bg-body border-bottom p-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h4 class="fw-bold mb-1">
+                            {% if is_edit %}
+                                <i class="bi bi-pencil-square text-primary me-2"></i>Edit Note
+                            {% else %}
+                                <i class="bi bi-plus-circle text-primary me-2"></i>Create New Note
+                            {% endif %}
+                        </h4>
+                        <p class="text-muted small mb-0">
+                            {% if is_edit %}
+                                Modify and re-encrypt this note in your vault
+                            {% else %}
+                                Content will be encrypted with Fernet before database insertion
+                            {% endif %}
+                        </p>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                        <i class="bi bi-lock-fill me-1"></i>Fernet Protected
+                    </span>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="post" action="" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2 small rounded-3 mb-3">
+                            {% for error in form.non_field_errors %}
+                                <div><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Title Field -->
+                    <div class="mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label fw-semibold small">Note Title</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>
+                        {% endif %}
+                        <small class="text-muted d-block mt-1">A concise, searchable title for your note.</small>
+                    </div>
+
+                    <!-- Category Field -->
+                    <div class="mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label fw-semibold small">Category</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Content Field -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label for="{{ form.content.id_for_label }}" class="form-label fw-semibold small mb-0">
+                                Note Content (Plaintext Input)
+                            </label>
+                            <span class="badge bg-secondary-subtle text-secondary small">
+                                <i class="bi bi-shield-check me-1"></i>Encrypted on submit
+                            </span>
+                        </div>
+                        {{ form.content }}
+                        {% if form.content.errors %}
+                            <div class="text-danger small mt-1">{{ form.content.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text small mt-1 text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            {{ form.content.help_text }}
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a href="{% if is_edit %}{% url 'note_detail' note.pk %}{% else %}{% url 'note_list' %}{% endif %}" class="btn btn-outline-secondary rounded-pill px-4">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                            <i class="bi bi-shield-lock-fill me-1"></i>
+                            {% if is_edit %}Re-encrypt & Save{% else %}Encrypt & Save Note{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
