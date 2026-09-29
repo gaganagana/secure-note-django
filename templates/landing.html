@@ -7,7 +7,7 @@
     <!-- Hero Text & CTA -->
     <div class="col-lg-7">
         <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-3 rounded-pill bg-primary-subtle text-primary border border-primary-subtle small fw-medium">
-            <i class="bi bi-shield-lock"></i> Application-Level Cryptography Portfolio
+            <i class="bi bi-shield-lock-fill"></i> Private &amp; Encrypted Personal Vault
         </div>
         <h1 class="display-4 fw-bold lh-1 mb-3">
             SecureNote
@@ -16,9 +16,8 @@
             Your private notes, protected by encryption.
         </p>
         <p class="text-body-secondary fs-5 mb-4">
-            A full-stack Python & Django web application demonstrating secure user authentication, 
-            strict owner-based authorization, and symmetric Fernet encryption at the application layer 
-            before data ever touches the database.
+            A clean, secure, and responsive web application for your personal notes, study guides, and project ideas. 
+            All note content is protected with application-level encryption before ever being stored in the database.
         </p>
         
         <div class="d-flex flex-wrap gap-3 mb-4">
@@ -30,65 +29,34 @@
             </a>
         </div>
 
-        <div class="alert alert-warning-subtle border border-warning-subtle rounded-3 small p-3">
-            <div class="d-flex gap-2">
-                <i class="bi bi-info-circle-fill text-warning fs-5 flex-shrink-0"></i>
-                <div>
-                    <strong>Educational Portfolio Project:</strong>
-                    SecureNote demonstrates full-stack software security principles (authentication, authorization, and symmetric ciphertext storage). 
-                    It is an educational project and is not intended as a replacement for commercial password managers. Please do not store banking credentials or API keys.
-                </div>
-            </div>
+        <div class="d-flex flex-wrap gap-4 text-muted small">
+            <span><i class="bi bi-check-circle-fill text-success me-1"></i> AES-128 Fernet Encryption</span>
+            <span><i class="bi bi-check-circle-fill text-success me-1"></i> Owner-Only Access</span>
+            <span><i class="bi bi-check-circle-fill text-success me-1"></i> Zero Plaintext Storage</span>
         </div>
     </div>
 
-    <!-- Security Diagram / Visual Element -->
+    <!-- Product Note Preview Card -->
     <div class="col-lg-5">
         <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-body-tertiary">
-            <div class="card-header bg-primary text-white py-3 px-4 d-flex align-items-center justify-content-between">
-                <span class="fw-semibold d-flex align-items-center gap-2">
-                    <i class="bi bi-cpu-fill"></i> Cryptographic Pipeline
+            <div class="card-header bg-body border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge category-badge category-work">Work</span>
+                    <small class="text-muted"><i class="bi bi-clock me-1"></i>Updated just now</small>
+                </div>
+                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                    <i class="bi bi-shield-check me-1"></i>Encrypted
                 </span>
-                <span class="badge bg-light text-primary rounded-pill">Fernet / AES-128</span>
             </div>
             <div class="card-body p-4">
-                <!-- Visual Pipeline Steps -->
-                <div class="pipeline-step mb-3 p-3 rounded-3 bg-body border">
-                    <div class="d-flex align-items-center justify-content-between mb-1">
-                        <span class="badge bg-success-subtle text-success border">Step 1: Input</span>
-                        <small class="text-muted">Browser</small>
-                    </div>
-                    <div class="font-monospace small text-body-secondary">
-                        "Meeting notes: Deploy v2 to production"
-                    </div>
+                <h5 class="fw-bold mb-3">Project Architecture &amp; Notes</h5>
+                <div class="p-3 rounded-3 bg-body border font-monospace small mb-3 text-body-secondary" style="line-height: 1.6;">
+                    Completed user authentication and ownership validation.
+                    All confidential notes are encrypted at the application layer before reaching SQLite database storage.
                 </div>
-
-                <div class="text-center my-2 text-primary">
-                    <i class="bi bi-arrow-down-circle-fill fs-4"></i>
-                </div>
-
-                <div class="pipeline-step mb-3 p-3 rounded-3 bg-primary-subtle border border-primary-subtle">
-                    <div class="d-flex align-items-center justify-content-between mb-1">
-                        <span class="badge bg-primary text-white">Step 2: encrypt_text()</span>
-                        <small class="text-primary fw-medium">Django View</small>
-                    </div>
-                    <div class="font-monospace small text-primary-emphasis text-break">
-                        gAAAAABm...X9_kLz4 (Fernet Base64 Token)
-                    </div>
-                </div>
-
-                <div class="text-center my-2 text-primary">
-                    <i class="bi bi-arrow-down-circle-fill fs-4"></i>
-                </div>
-
-                <div class="pipeline-step p-3 rounded-3 bg-body border">
-                    <div class="d-flex align-items-center justify-content-between mb-1">
-                        <span class="badge bg-secondary-subtle text-secondary border">Step 3: Stored in SQLite</span>
-                        <small class="text-muted">Zero Plaintext in DB</small>
-                    </div>
-                    <div class="small text-muted">
-                        Even with direct database access, attackers only see encrypted ciphertext.
-                    </div>
+                <div class="d-flex align-items-center justify-content-between pt-2 border-top text-muted small">
+                    <span><i class="bi bi-lock-fill text-primary me-1"></i>Fernet Protected</span>
+                    <span class="text-primary fw-medium"><i class="bi bi-eye me-1"></i>Decrypted for Owner</span>
                 </div>
             </div>
         </div>
@@ -106,7 +74,7 @@
                 <h5 class="card-title fw-bold">Fernet Encryption</h5>
                 <p class="card-text text-body-secondary small">
                     Note content is encrypted using AES-128 in CBC mode with PKCS7 padding and authenticated via HMAC-SHA256. 
-                    Plaintext never touches SQLite disk storage.
+                    Plaintext never touches database disk storage.
                 </p>
             </div>
         </div>
@@ -120,7 +88,7 @@
                 <h5 class="card-title fw-bold">Strict Ownership Access</h5>
                 <p class="card-text text-body-secondary small">
                     Every database query and API endpoint explicitly verifies note ownership. 
-                    User B cannot view, edit, or delete User A's notes even if they know the ID.
+                    Users cannot view, edit, or delete another user's notes even if they know the ID.
                 </p>
             </div>
         </div>
@@ -131,7 +99,7 @@
                 <div class="feature-icon bg-info text-white rounded-3 mb-3 d-inline-flex align-items-center justify-content-center p-3 fs-3">
                     <i class="bi bi-lightning-charge-fill"></i>
                 </div>
-                <h5 class="card-title fw-bold">REST API & Fetch</h5>
+                <h5 class="card-title fw-bold">REST API &amp; Fetch</h5>
                 <p class="card-text text-body-secondary small">
                     Includes Django REST Framework API endpoints with strict authentication, paired with Vanilla JavaScript Fetch API 
                     for real-time dashboard updates without page reload.
