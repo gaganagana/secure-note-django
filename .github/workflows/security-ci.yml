@@ -1,0 +1,55 @@
+﻿name: Security & Quality CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test-and-scan:
+    name: Unit Tests & SAST Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Project & Security Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install bandit semgrep flake8
+
+      - name: Run Automated Django Unit Tests
+        env:
+          DJANGO_SECRET_KEY: "ci-insecure-test-secret-key-for-automated-testing-only"
+          ENCRYPTION_KEY: "Y2ktaW5zZWN1cmUtdGVzdC1lbmNyeXB0aW9uLWtleS0zMmJ5dGVzIQ=="
+          DEBUG: "True"
+        run: |
+          python manage.py test
+
+      - name: Run Bandit Static Application Security Testing (SAST)
+        run: |
+          echo "Running Bandit SAST scan across codebase..."
+          bandit -r notes/ securenote/ -ll -ii
+
+      - name: Run Semgrep Security Rules
+        run: |
+          echo "Running Semgrep security audit..."
+          semgrep --config "p/security-audit" --config "p/django" --error notes/ securenote/
+
+      - name: Verify Secret & Environment Sanitization
+        run: |
+          echo "Verifying no live production secrets exist in repo..."
+          if grep -rn "live_prod_key" . --exclude-dir={venv,.git}; then
+            echo "Security check failed: live secret pattern detected!"
+            exit 1
+          fi
+          echo "Environment sanitization check passed."
