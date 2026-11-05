@@ -1,0 +1,6 @@
+﻿[bandit]
+targets = notes,securenote
+exclude = /venv/,/tests/,/static/
+skips = B101
+severity = low
+confidence = medium
