@@ -1,61 +1,63 @@
-# SecureNote – Encrypted Personal Notes App
+﻿# SecureNote — Encrypted Personal Notes & DevSecOps Showcase
 
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![Security CI](https://github.com/gaganagana/secure-note-django/actions/workflows/security-ci.yml/badge.svg)](https://github.com/gaganagana/secure-note-django/actions)
+[![Bandit SAST](https://img.shields.io/badge/Bandit%20SAST-Verified%20Clean-brightgreen.svg)](#security-and-devsecops)
+[![OWASP Protection](https://img.shields.io/badge/OWASP-BOLA%20%2F%20IDOR%20Hardened-blue.svg)](docs/THREAT_MODEL.md)
+[![Cryptography](https://img.shields.io/badge/Cryptography-Fernet%20AES--128-orange.svg)](#how-encryption-works)
 [![Django](https://img.shields.io/badge/Django-5.0%2B-green.svg?logo=django&logoColor=white)](https://www.djangoproject.com/)
 [![DRF](https://img.shields.io/badge/REST%20Framework-3.14%2B-red.svg)](https://www.django-rest-framework.org/)
-[![Security](https://img.shields.io/badge/Cryptography-Fernet%20AES--128-orange.svg)](#how-encryption-works)
 
-I built SecureNote as a Python full-stack project to understand how application security and cryptography work in Django. It allows users to write private notes that are automatically encrypted using Python's Fernet library before being saved to SQLite, ensuring the database never stores plaintext notes.
-
----
-
-## Why I Made It
-
-In typical web applications, user notes or messages are stored directly in plain text in the database. If a database backup is misplaced or an unauthorized user gets direct access to the database file, all private text can be read immediately.
-
-I wanted to build a working project where note text is encrypted at the application level before being saved to the database. Even if someone opens the SQLite database file directly, they will only see encrypted ciphertext tokens. Only the logged-in owner can decrypt and view their notes.
+SecureNote is a security-focused full-stack web application designed to demonstrate **application-layer cryptographic defense-in-depth**, **API security (BOLA/IDOR prevention)**, and **DevSecOps automation in CI/CD pipelines**. It eliminates plaintext persistence in the database by encrypting note payloads at the application boundary prior to SQL execution.
 
 ---
 
-## What I Worked On
+## Key Highlights & Architectural Defense
 
-* **User Authentication:** Built registration, login, and logout views using Django's built-in authentication system with secure password hashing.
-* **Symmetric Encryption:** Used Python's `cryptography.fernet` library to encrypt note contents with AES-128 in CBC mode and HMAC-SHA256 authentication before saving them to SQLite.
-* **Ownership Access Control:** Added strict checks in Django views so users can only view, edit, or delete notes that belong to their own account.
-* **REST API & Fetch:** Created API endpoints using Django REST Framework and connected them with vanilla JavaScript `fetch()` so the dashboard updates dynamically without full page reloads.
-* **Automated Unit Tests:** Wrote 12 unit tests using Django's `TestCase` covering user registration, login, note encryption, decryption, and access restrictions. All 12 tests pass.
-
----
-
-## Technologies Used
-
-* **Backend:** Python 3, Django, Django REST Framework
-* **Cryptography:** `cryptography` library (Fernet / AES-128)
-* **Database:** SQLite
-* **Frontend:** HTML5, CSS3, Bootstrap 5, JavaScript (Fetch API)
-* **Testing:** Django TestCase
+- **Zero Plaintext Persistence:** Even if `db.sqlite3` is extracted or dumped via physical or logical compromise, all note contents are stored strictly as encrypted Base64 Fernet tokens.
+- **Symmetric Authenticated Cryptography:** Leverages Python's `cryptography` engine (`Fernet` specification: AES-128 in CBC mode with PKCS7 padding and HMAC-SHA256 authenticated integrity verification).
+- **Strict BOLA / IDOR Elimination:** Every database interaction is scoped to the authenticated session context (`Note.objects.filter(user=request.user)`), guaranteeing isolation between tenant records.
+- **Automated DevSecOps Pipeline:** Continuous Integration via GitHub Actions running automated unit testing, Bandit SAST analysis, Semgrep security scans, and secret sanitization checks on every commit.
 
 ---
 
-## How Encryption Works in This Project
+## Threat Model & Access Control
 
-When you save a note, the Django view encrypts the content before writing it to the database:
+For full architectural threat analysis based on the STRIDE framework, refer to:
+- [Threat Model & Security Architecture Document](docs/THREAT_MODEL.md)
+- [Security Policy & Cryptographic Specifications](SECURITY.md)
+
+### Cryptographic Workflow
 
 ```text
-User enters note: "Meeting notes for Friday"
+User Input: "Financial Notes & Passwords"
           │
           ▼
-Django View calls encrypt_text(content)
-          │  (Fernet symmetric key loaded from environment variable)
+Django View / DRF Serializer
+          │  (Fernet symmetric key loaded securely from environment)
           ▼
-Stored in SQLite: "gAAAAABn7Q8...X9_kLz4" (Ciphertext Token)
+encrypt_text(content) -> "gAAAAABn7Q8...X9_kLz4" (Ciphertext Token)
           │
           ▼
-When the owner views the note:
-Django View calls decrypt_text(ciphertext) -> "Meeting notes for Friday"
+Saved to SQLite Database (Zero Plaintext Exposure)
+          │
+          ▼
+Decryption on retrieval (Authenticated Owner ONLY):
+decrypt_text(token) -> "Financial Notes & Passwords"
 ```
 
-If another user tries to access the note using its ID, Django blocks the request with an HTTP 403 / 404 response.
+---
+
+## Security and DevSecOps
+
+The repository includes pre-configured security tooling to shift security left into development workflows:
+
+1. **GitHub Actions CI/CD (`.github/workflows/security-ci.yml`)**:
+   - Executes 12 automated unit tests covering cryptographic integrity, authentication, and multi-tenant isolation.
+   - Runs **Bandit SAST** across all backend code to detect high-severity Python vulnerabilities.
+   - Runs **Semgrep** rulesets for Django security anti-patterns.
+2. **Local Security Profiles**:
+   - `.bandit` configuration profile tailoring rule confidence and severities.
+   - `.pre-commit-config.yaml` to prevent committing secrets or private keys.
 
 ---
 
@@ -74,27 +76,33 @@ venv\Scripts\activate      # On Windows
 # source venv/bin/activate  # On Linux/macOS
 
 pip install -r requirements.txt
+pip install bandit flake8
 ```
 
-### 3. Set up environment variables & database
+### 3. Configure environment variables & database
 ```bash
 cp .env.example .env
 python manage.py migrate
 ```
 
-### 4. Run tests & start the server
+### 4. Run automated tests & security scanner
 ```bash
+# Execute unit test suite (12 tests)
 python manage.py test
-python manage.py runserver
+
+# Run Bandit SAST security scan
+bandit -r notes/ securenote/ -ll
 ```
 
-Open `http://127.0.0.1:8000/` in your browser.
+### 5. Launch the application
+```bash
+python manage.py runserver
+```
+Navigate to `http://127.0.0.1:8000/` in your browser.
 
 ---
 
-## What I Learned
-
-* The difference between one-way password hashing (Argon2 / PBKDF2) and two-way symmetric encryption (Fernet / AES).
-* How to write Django unit tests that check models, views, and authentication permissions.
-* Passing CSRF tokens safely with JavaScript fetch calls in Django templates.
-* Managing secret keys and credentials using `.env` files and `.gitignore`.
+## Author & Project Link
+- **Author:** Gagana C P
+- **LinkedIn:** [linkedin.com/in/gaganacp](https://www.linkedin.com/in/gaganacp/)
+- **Repository:** [github.com/gaganagana/secure-note-django](https://github.com/gaganagana/secure-note-django)
